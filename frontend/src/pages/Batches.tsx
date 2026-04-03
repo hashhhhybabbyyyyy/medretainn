@@ -16,8 +16,8 @@ import BatchWhatsAppCampaign from '../components/BatchWhatsAppCampaign';
 
 const Batches: React.FC = () => {
   const [batches, setBatches] = useState<Batch[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [_loading, _setLoading] = useState(true);
+  const [_error, _setError] = useState<string | null>(null);
   const [expandedBatch, setExpandedBatch] = useState<number | null>(null);
   const [batchPatients, setBatchPatients] = useState<Record<number, BatchPatient[]>>({});
   const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
@@ -51,8 +51,8 @@ const Batches: React.FC = () => {
 
   const loadData = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      _setLoading(true);
+      _setError(null);
       const [batchesData, options] = await Promise.all([
         getBatches(),
         getFilterOptions()
@@ -60,9 +60,9 @@ const Batches: React.FC = () => {
       setBatches(batchesData);
       setFilterOptions(options);
     } catch (err: any) {
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      _setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
-      setLoading(false);
+      _setLoading(false);
     }
   };
 
@@ -213,7 +213,6 @@ const Batches: React.FC = () => {
         </div>
       </div>
 
-      {/* Create Batch Card */}
       <div className="bg-[#141921] p-8 rounded-3xl border border-white/5 mb-8 shadow-2xl relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[80px] -mr-32 -mt-32" />
 
@@ -285,7 +284,7 @@ const Batches: React.FC = () => {
             </div>
             <div className="flex items-end pb-3">
               <label className="flex items-center gap-3 cursor-pointer group">
-                <input type="checkbox" checked={whatsappOnly} onChange={(e: any) => setWhatsappOnly(e.target.checked)} className="w-5 h-5 rounded-lg border-white/10 bg-black/40 text-emerald-500 focus:ring-emerald-500/20 appearance-none border checked:bg-emerald-500 transition-all" />
+                <input type="checkbox" checked={whatsappOnly} onChange={(e: any) => setWhatsappOnly(e.target.checked)} className="w-5 h-5 rounded-lg border-white/10 bg-black/40 text-emerald-500 appearance-none border checked:bg-emerald-500 transition-all focus:ring-2 focus:ring-emerald-500/20" />
                 <span className="text-sm font-bold text-slate-400 group-hover:text-white transition-colors">WhatsApp Eligible Only</span>
               </label>
             </div>
@@ -309,13 +308,12 @@ const Batches: React.FC = () => {
               <option value={100}>100 Patients</option>
             </select>
           </div>
-          <ActionButton onClick={handleCreateBatch} loading={creating} className="!py-3.5 !px-8">
+          <ActionButton onClick={handleCreateBatch} loading={creating}>
             {creating ? 'Processing...' : 'Create Campaign'}
           </ActionButton>
         </div>
       </div>
 
-      {/* List */}
       <div className="space-y-4">
         {batches.map((batch: any) => {
           const patients = batchPatients[batch.id] || [];

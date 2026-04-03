@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import { sendMessage } from '../api';
-import { Send, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 
 interface SendWhatsAppButtonProps {
   patientId: string;
@@ -69,8 +69,8 @@ const SendWhatsAppButton: React.FC<SendWhatsAppButtonProps> = ({
         onClick={handleSendMessage}
         disabled={loading || status === 'success'}
         className={`font-bold text-sm px-5 py-3 rounded-2xl flex items-center gap-2 transition-all active:scale-[0.98] ${variant === 'primary' ? 'bg-blue-600 text-white hover:bg-blue-500' :
-            variant === 'secondary' ? 'bg-slate-800 text-slate-300' :
-              'bg-emerald-500 text-white'
+          variant === 'secondary' ? 'bg-slate-800 text-slate-300' :
+            'bg-emerald-500 text-white'
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         title={`Send WhatsApp message to ${patientName}`}
       >

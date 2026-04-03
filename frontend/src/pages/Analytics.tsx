@@ -10,17 +10,17 @@ import {
   RetentionTrendResponse
 } from '../api';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  LineChart, Line, PieChart, Pie, Cell, AreaChart, Area
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  Cell, AreaChart, Area, PieChart, Pie
 } from 'recharts';
 import {
-  TrendingUp, Users, AlertTriangle, Activity,
-  Brain, Target, ShieldCheck, ChevronRight, Search, Info
+  TrendingUp, Activity,
+  Brain, Target, ShieldCheck, Search, Info
 } from 'lucide-react';
 import KPICards from '../components/KPICards';
 
 const Analytics: React.FC = () => {
-  const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
+  const [_summary, _setSummary] = useState<AnalyticsSummary | null>(null);
   const [trendData, setTrendData] = useState<RetentionTrendResponse | null>(null);
   const [conditionsData, setConditionsData] = useState<any>(null);
   const [mlModelInfo, setMlModelInfo] = useState<any>(null);
@@ -49,10 +49,10 @@ const Analytics: React.FC = () => {
         getMLFeatureImportance()
       ]);
 
-      setSummary(summaryData);
+      _setSummary(summaryData);
       setTrendData(trend);
       setConditionsData(conditions);
-      setMLModelInfo(modelInfo);
+      setMlModelInfo(modelInfo);
       setFeatureImportance(features);
       setError(null);
     } catch (err: any) {
@@ -69,7 +69,6 @@ const Analytics: React.FC = () => {
     try {
       const [insights, details] = await Promise.all([
         getPatientRiskAnalysis(searchPatientId),
-        // Direct fetch for details to avoid dependency loop in api.ts
         fetch(`${(import.meta.env.VITE_API_URL || '/api')}/patients/${searchPatientId}`).then((res: any) => res.json())
       ]);
       setPatientInsights(insights);
@@ -89,6 +88,8 @@ const Analytics: React.FC = () => {
     </div>
   );
 
+  if (error) return <div className="p-8 text-rose-500 bg-rose-500/10 rounded-3xl border border-rose-500/20">Error: {error}</div>;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex justify-between items-end">
@@ -105,7 +106,6 @@ const Analytics: React.FC = () => {
       <KPICards />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Retention Trend Chart */}
         <div className="lg:col-span-2 bg-[#141921] p-8 rounded-[32px] border border-white/5 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/5 rounded-full blur-[80px] -mr-32 -mt-32" />
           <div className="flex items-center justify-between mb-8 relative z-10">
@@ -142,7 +142,6 @@ const Analytics: React.FC = () => {
           </div>
         </div>
 
-        {/* Feature Importance */}
         <div className="bg-[#141921] p-8 rounded-[32px] border border-white/5 shadow-2xl">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-12 h-12 rounded-2xl bg-indigo-600/10 flex items-center justify-center border border-indigo-500/20">
@@ -172,7 +171,7 @@ const Analytics: React.FC = () => {
             <div className="flex items-start gap-3">
               <Info size={16} className="text-indigo-400 mt-0.5 shrink-0" />
               <p className="text-[11px] leading-relaxed text-indigo-300/70">
-                Our Random Forest model (v{mlModelInfo?.version || '1.2.0'}) identifies <b>{featureImportance?.features?.[0]?.feature}</b> as the primary driver of patient attrition in the current quarter.
+                Our Random Forest model (v{mlModelInfo?.version || '1.2.0'}) identifies primary churn drivers.
               </p>
             </div>
           </div>
@@ -180,7 +179,6 @@ const Analytics: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Conditions Pie Chart */}
         <div className="bg-[#141921] p-8 rounded-[32px] border border-white/5 relative group">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-12 h-12 rounded-2xl bg-emerald-600/10 flex items-center justify-center border border-emerald-500/20">
@@ -207,7 +205,7 @@ const Analytics: React.FC = () => {
                     nameKey="name"
                     stroke="none"
                   >
-                    {(conditionsData?.conditions || []).map((entry: any, index: any) => (
+                    {(conditionsData?.conditions || []).map((_entry: any, index: any) => (
                       <Cell key={`cell-${index}`} fill={['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'][index % 5]} />
                     ))}
                   </Pie>
@@ -229,7 +227,6 @@ const Analytics: React.FC = () => {
           </div>
         </div>
 
-        {/* AI Patient Analyzer */}
         <div className="bg-[#141921] p-8 rounded-[32px] border border-white/5 relative flex flex-col group transition-all hover:border-blue-500/20">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-12 h-12 rounded-2xl bg-blue-600/10 flex items-center justify-center border border-blue-500/20">
@@ -298,7 +295,7 @@ const Analytics: React.FC = () => {
           ) : (
             <div className="flex-1 border-2 border-dashed border-white/5 rounded-[32px] flex flex-col items-center justify-center p-12 text-center opacity-40">
               <Activity size={48} className="text-slate-600 mb-6" />
-              <p className="text-sm font-medium text-slate-500">Analyze individual patient churn risk<br />using our predictive neural engine</p>
+              <p className="text-sm font-medium text-slate-500">Analyze individual patient churn risk</p>
             </div>
           )}
         </div>

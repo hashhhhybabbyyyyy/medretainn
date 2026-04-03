@@ -38,7 +38,7 @@ const KPICards: React.FC = () => {
     const targets = {
       totalPatients: data.total_patients,
       highRisk: data.high_risk_count,
-      whatsappEligible: data.whatsapp_opt_in_percentage,
+      whatsappEligible: data.whatsapp_opt_in_percentage || 0,
       avgChurnScore: data.avg_churn_score
     };
 
