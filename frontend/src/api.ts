@@ -258,6 +258,10 @@ export async function getHIMSConnections(): Promise<any> {
     return api<any>('/hims/connection-status');
 }
 
+export async function getHIMSConnectionDetails(hospital_id: string): Promise<any> {
+    return api<any>(`/hims/connection-details/${hospital_id}`);
+}
+
 export async function connectHIMS(payload: any): Promise<any> {
     return api<any>('/hims/connect', { method: 'POST', body: JSON.stringify(payload) });
 }

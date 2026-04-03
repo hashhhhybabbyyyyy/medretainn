@@ -8,7 +8,7 @@ from typing import Optional
 import math
 
 from ..database import get_db
-from ..models import Patient
+from ..models import Patient, MessageLog
 from ..schemas import (
     PatientListResponse,
     PatientBase,
@@ -128,6 +128,29 @@ def get_patient_detail(
         raise HTTPException(status_code=404, detail=f"Patient {patient_id} not found")
 
     return PatientDetail.model_validate(patient)
+
+
+@router.get("/{patient_id}/notes")
+def get_patient_notes(
+    patient_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get recent notes/messages for a specific patient. Returns list compatible with frontend notes component.
+    """
+    messages = db.query(MessageLog).filter(MessageLog.patient_id == patient_id).order_by(MessageLog.sent_at.desc()).all()
+
+    notes = []
+    for m in messages:
+        notes.append({
+            "id": m.id,
+            "content": m.content,
+            "created_at": m.sent_at.isoformat() if m.sent_at else None,
+            "created_by": "System",
+            "type": (m.message_type or 'message')
+        })
+
+    return notes
 
 
 @router.put("/{patient_id}/action")

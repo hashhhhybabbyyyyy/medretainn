@@ -83,3 +83,25 @@ async def get_connection_status():
         }
     finally:
         db.close()
+
+
+@router.get("/connection-details/{hospital_id}")
+async def get_connection_details(hospital_id: str):
+    """Return non-sensitive HIMS connection metadata for a hospital.
+
+    This endpoint intentionally does NOT return encrypted credentials or secrets.
+    """
+    db = SessionLocal()
+    try:
+        conn = db.query(HIMSConnection).filter(HIMSConnection.hospital_id == hospital_id).first()
+        if not conn:
+            raise HTTPException(status_code=404, detail=f"No HIMS connection for {hospital_id}")
+        return {
+            "hospital_id": conn.hospital_id,
+            "hims_name": conn.hims_name,
+            "connected_at": conn.created_at,
+            "updated_at": conn.updated_at,
+            "is_active": conn.is_active
+        }
+    finally:
+        db.close()
