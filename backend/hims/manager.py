@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from .interface import HIMSAdapter, AuthenticationError, SessionExpiredError
 from .adapters.doctor247 import Doctor247Adapter
+import re
 from .mapper import DataMapper
 from ..database import SessionLocal
 from ..models import HIMSConnection
@@ -37,11 +38,21 @@ class HIMSManager:
 
     def __init__(self):
         self.mapper = DataMapper()
-        # Mapping names to adapter classes
+        # Mapping names to adapter classes (keys should be normalized)
         self._adapter_map = {
-            "doctor247": Doctor247Adapter,
-            "doctor 24/7": Doctor247Adapter
+            self._normalize_key("doctor247"): Doctor247Adapter,
+            self._normalize_key("doctor 24/7"): Doctor247Adapter,
+            self._normalize_key("doctor24/7"): Doctor247Adapter,
         }
+
+    def _normalize_key(self, name: str) -> str:
+        """Normalize a HIMS name to a simple alphanumeric key."""
+        if not name:
+            return ""
+        key = name.lower()
+        # remove any non-alphanumeric characters
+        key = re.sub(r'[^a-z0-9]', '', key)
+        return key
 
     def _encrypt(self, data: Dict[str, Any]) -> str:
         """Encrypts dictionary data to a string."""
@@ -57,7 +68,7 @@ class HIMSManager:
         """
         Authenticates with HIMS, encrypts the session, and saves it to the database.
         """
-        hims_key = hims_name.lower().replace(" ", "")
+        hims_key = self._normalize_key(hims_name)
         adapter_class = self._adapter_map.get(hims_key)
         
         if not adapter_class:
@@ -125,7 +136,8 @@ class HIMSManager:
             hims_key = hims_name.lower().replace(" ", "")
             adapter_class = self._adapter_map.get(hims_key)
             
-            adapter = adapter_class(session=session)
+            # Pass credentials (api_key/base_url/etc) into adapter so it can operate
+            adapter = adapter_class(session=session, api_key=credentials.get("api_key"), base_url=credentials.get("url"))
             
             # Validate session
             if not adapter.validate_session(session):
