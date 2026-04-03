@@ -1,9 +1,58 @@
 /**
- * MedRetain CRM - Production API Client
- * Centralized API handler and Type definitions
+ * Tathya CRM - Production API Client
+ * All calls go to VITE_API_URL (FastAPI backend)
  */
 
-// --- Types ---
+const BASE = (import.meta as any).env.VITE_API_URL || '/api';
+
+// ─── Auth helpers ─────────────────────────────────────────────────────────────
+
+export function getToken(): string | null {
+    return localStorage.getItem('tathya_token');
+}
+export function setToken(token: string) {
+    localStorage.setItem('tathya_token', token);
+}
+export function clearToken() {
+    localStorage.removeItem('tathya_token');
+    localStorage.removeItem('tathya_user');
+}
+export function getUser(): any {
+    const u = localStorage.getItem('tathya_user');
+    return u ? JSON.parse(u) : null;
+}
+export function saveUser(user: any) {
+    localStorage.setItem('tathya_user', JSON.stringify(user));
+}
+
+// ─── Core fetch wrapper ───────────────────────────────────────────────────────
+
+async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
+    const token = getToken();
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(options.headers as Record<string, string> || {}),
+    };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`${BASE}${path}`, { ...options, headers });
+
+    if (res.status === 401) {
+        clearToken();
+        window.location.href = '/login';
+        throw new Error('Session expired. Please log in again.');
+    }
+    if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.detail || `API Error ${res.status}`);
+    }
+    return res.json();
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface LoginPayload { username: string; password: string; }
+export interface LoginResponse { access_token: string; token_type: string; user: any; }
 
 export interface Patient {
     patient_id: string;
@@ -56,7 +105,8 @@ export interface PatientFilters {
     is_chronic?: string;
     hospital_branch?: string;
     patient_segment?: string;
-    [key: string]: any; // Allow dynamic indexing
+    search?: string;
+    [key: string]: any;
 }
 
 export interface AnalyticsSummary {
@@ -69,10 +119,7 @@ export interface AnalyticsSummary {
 }
 
 export interface RetentionTrendResponse {
-    trend: Array<{
-        month: string;
-        patient_count: number;
-    }>;
+    trend: Array<{ month: string; patient_count: number }>;
 }
 
 export interface Batch {
@@ -96,42 +143,121 @@ export interface FilterOptions {
     risk_levels?: string[];
 }
 
-// --- API Logic ---
-// Functions below are stubs for build verification
+// ─── Auth ─────────────────────────────────────────────────────────────────────
 
-// --- Real Functions ---
+export async function login(payload: LoginPayload): Promise<LoginResponse> {
+    // FastAPI OAuth2 form submit
+    const form = new URLSearchParams();
+    form.append('username', payload.username);
+    form.append('password', payload.password);
+    const res = await fetch(`${BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: form.toString(),
+    });
+    if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.detail || 'Invalid credentials');
+    }
+    const data = await res.json();
+    return data;
+}
 
-export async function getPatients(_filters: PatientFilters = {}): Promise<PatientsResponse> {
-    return { total: 0, page: 1, page_size: 10, total_pages: 1, patients: [] };
+export async function logout(): Promise<void> {
+    clearToken();
+}
+
+// ─── Patients ─────────────────────────────────────────────────────────────────
+
+export async function getPatients(filters: PatientFilters = {}): Promise<PatientsResponse> {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([k, v]) => { if (v !== undefined && v !== '') params.append(k, String(v)); });
+    return api<PatientsResponse>(`/patients?${params.toString()}`);
 }
 
 export async function getPatient(id: string): Promise<PatientDetail> {
-    throw new Error(`Patient ${id} not found`);
+    return api<PatientDetail>(`/patients/${id}`);
 }
+
+// ─── Analytics ────────────────────────────────────────────────────────────────
 
 export async function getSummary(): Promise<AnalyticsSummary> {
-    return { total_patients: 0, high_risk_count: 0, medium_risk_count: 0, low_risk_count: 0, avg_churn_score: 0 };
+    return api<AnalyticsSummary>('/analytics/summary');
 }
 
-// --- Stub Exports ---
+export async function getRetentionTrend(): Promise<RetentionTrendResponse> {
+    return api<RetentionTrendResponse>('/analytics/retention-trend');
+}
 
-export const getRetentionTrend = async (): Promise<RetentionTrendResponse> => ({ trend: [] });
-export const getConditionsBreakdown = async (): Promise<any> => ({ conditions: [] });
-export const getMLModelInfo = async (): Promise<any> => ({});
-export const getMLFeatureImportance = async (): Promise<any> => ({ features: [] });
-export const getPatientRiskAnalysis = async (_id: any): Promise<any> => ({ risk_score: 0, risk_label: 'Low', risk_factors: [], recommendation: '' });
-export const getBatches = async (): Promise<Batch[]> => [];
-export const createBatch = async (_payload: any): Promise<Batch> => ({ id: 0, created_at: new Date().toISOString(), batch_size: 0, label: '' });
-export const getBatchPatients = async (_id: any): Promise<BatchPatient[]> => [];
-export const markBatchPatientActioned = async (_batchId: any, _patientId: any): Promise<any> => ({ success: true });
-export const getFilterOptions = async (): Promise<FilterOptions> => ({ branches: [], segments: [], conditions: [] });
-export const exportPatientData = async (_format: any, _filters: any): Promise<any> => { console.log('Exporting...'); };
-export const getMessageLog = async (): Promise<any[]> => [];
+export async function getConditionsBreakdown(): Promise<any> {
+    return api<any>('/analytics/conditions');
+}
 
-export const sendMessage = async (_payload: any): Promise<any> => ({ success: true });
-export const sendBatchMessages = async (_payload: any): Promise<any> => ({ success: true });
+export async function getMLModelInfo(): Promise<any> {
+    return api<any>('/analytics/ml-model-info');
+}
 
-// HIMS
-export const checkHIMSConnection = async (): Promise<any> => ({ status: 'disconnected' });
-export const connectHIMS = async (_payload: any): Promise<any> => ({ success: true });
-export const disconnectHIMS = async (_id: any): Promise<any> => ({ success: true });
+export async function getMLFeatureImportance(): Promise<any> {
+    return api<any>('/analytics/feature-importance');
+}
+
+export async function getPatientRiskAnalysis(patientId: string): Promise<any> {
+    return api<any>(`/analytics/patient-risk/${patientId}`);
+}
+
+// ─── Batches ──────────────────────────────────────────────────────────────────
+
+export async function getBatches(): Promise<Batch[]> {
+    return api<Batch[]>('/batches');
+}
+
+export async function createBatch(payload: any): Promise<Batch> {
+    return api<Batch>('/batches', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function getBatchPatients(batchId: number): Promise<BatchPatient[]> {
+    return api<BatchPatient[]>(`/batches/${batchId}/patients`);
+}
+
+export async function markBatchPatientActioned(batchId: number, patientId: string): Promise<any> {
+    return api<any>(`/batches/${batchId}/patients/${patientId}/action`, { method: 'POST' });
+}
+
+// ─── Filters / Export ─────────────────────────────────────────────────────────
+
+export async function getFilterOptions(): Promise<FilterOptions> {
+    return api<FilterOptions>('/patients/filter-options');
+}
+
+export async function exportPatientData(format: string, filters: any): Promise<any> {
+    const params = new URLSearchParams({ format, ...filters });
+    return api<any>(`/patients/export?${params.toString()}`);
+}
+
+// ─── Messaging ────────────────────────────────────────────────────────────────
+
+export async function getMessageLog(): Promise<any[]> {
+    return api<any[]>('/messages');
+}
+
+export async function sendMessage(payload: any): Promise<any> {
+    return api<any>('/messages/send', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function sendBatchMessages(payload: any): Promise<any> {
+    return api<any>('/messages/send-batch', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+// ─── HIMS Connection ──────────────────────────────────────────────────────────
+
+export async function checkHIMSConnection(): Promise<any> {
+    return api<any>('/hims/status');
+}
+
+export async function connectHIMS(payload: any): Promise<any> {
+    return api<any>('/hims/connect', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function disconnectHIMS(id: any): Promise<any> {
+    return api<any>(`/hims/disconnect/${id}`, { method: 'POST' });
+}

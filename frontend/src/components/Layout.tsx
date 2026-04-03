@@ -12,18 +12,22 @@ import {
   Settings,
   ChevronRight,
   Menu,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 import GlobalSearch from './GlobalSearch';
+import { getUser } from '../api';
 
 interface LayoutProps {
   children: React.ReactNode;
+  onLogout?: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: React.FC<LayoutProps> = ({ children, onLogout }) => {
   const location = useLocation();
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const user = getUser();
 
   // Global keyboard shortcut for search
   useEffect(() => {
@@ -95,15 +99,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </nav>
 
         {/* System Settings & User */}
-        <div className="p-6 border-t border-white/5 space-y-4">
+        <div className="p-6 border-t border-white/5 space-y-3">
+          {sidebarOpen && user && (
+            <div className="px-4 py-3 bg-white/[0.03] rounded-2xl border border-white/5 mb-2">
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Signed in as</div>
+              <div className="text-sm font-bold text-white truncate">{user.full_name || user.username || 'Admin'}</div>
+              <div className="text-[10px] text-slate-500 truncate">{user.role || 'CRM Administrator'}</div>
+            </div>
+          )}
           <button className="flex items-center gap-4 text-slate-500 hover:text-white transition-colors px-4 py-2">
             <Bell size={18} />
-            {sidebarOpen && <span className="text-sm font-bold">Alert Inbox</span>}
+            {sidebarOpen && <span className="text-sm font-bold">Notifications</span>}
           </button>
-          <button className="flex items-center gap-4 text-slate-500 hover:text-white transition-colors px-4 py-2">
-            <Settings size={18} />
-            {sidebarOpen && <span className="text-sm font-bold">Preferences</span>}
-          </button>
+          {onLogout && (
+            <button onClick={onLogout} className="flex items-center gap-4 text-slate-500 hover:text-rose-400 transition-colors px-4 py-2 w-full">
+              <LogOut size={18} />
+              {sidebarOpen && <span className="text-sm font-bold">Sign Out</span>}
+            </button>
+          )}
         </div>
       </aside>
 
