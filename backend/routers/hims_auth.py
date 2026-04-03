@@ -28,12 +28,18 @@ async def connect_hims(request: HIMSConnectRequest):
     if not request.hospital_id or not request.hims_name:
         raise HTTPException(status_code=400, detail="Missing hospital_id or hims_name.")
     
+    # Basic credentials validation to provide clearer errors early and avoid storing incomplete data
+    creds = request.credentials or {}
+    # Two supported connection modes: DB (host) or REST/API (url)
+    if not (creds.get("host") or creds.get("url") or creds.get("api_key")):
+        raise HTTPException(status_code=400, detail="Invalid credentials: provide either 'host' for DB or 'url'/'api_key' for REST API.")
+
     try:
-        # Authenticate and encrypt
+        # Authenticate and encrypt (manager will raise AuthenticationError on failure)
         session = manager.connect_hospital(
             request.hospital_id,
             request.hims_name,
-            request.credentials
+            creds
         )
         return {
             "status": "success",
@@ -41,12 +47,14 @@ async def connect_hims(request: HIMSConnectRequest):
             "session_type": session.get("type"),
             "authenticated_at": session.get("authenticated_at")
         }
-    except AuthenticationError as e:
-        raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
+    except AuthenticationError:
+        # Return auth-specific error without exposing secrets
+        raise HTTPException(status_code=401, detail="Authentication failed: check provided credentials and HIMS endpoint.")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        print(f"Error connecting HIMS for hospital {request.hospital_id}: {e}")
+        # Log server-side for diagnostics but do not include credentials in responses
+        print(f"Error connecting HIMS for hospital {request.hospital_id}: {str(e)}")
         raise HTTPException(status_code=500, detail="An internal error occurred during connection.")
 
 @router.delete("/disconnect/{hospital_id}")
