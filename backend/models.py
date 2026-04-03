@@ -171,3 +171,20 @@ class HIMSConnection(Base):
     
     # Optional flags
     is_active = Column(Boolean, default=True)
+
+
+class CRMUser(Base):
+    """
+    CRM User model for authentication and authorization.
+    Supports role-based access: admin / staff.
+    """
+    __tablename__ = "crm_users"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    username = Column(String(100), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    full_name = Column(String(200), nullable=True)
+    role = Column(String(50), default="staff")  # admin / staff
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_login = Column(DateTime, nullable=True)

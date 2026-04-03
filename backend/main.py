@@ -12,6 +12,7 @@ from .database import init_db, SessionLocal
 from .models import Patient
 from .data_loader import initialize_data
 from .routers import patients, batches, messages, analytics, hims_auth
+from .routers import auth as auth_router
 from .hims import webhooks
 from .hims.scheduler import hims_scheduler
 
@@ -65,12 +66,27 @@ app.add_middleware(
 
 
 # Include routers
+app.include_router(auth_router.router)
 app.include_router(patients.router)
 app.include_router(batches.router)
 app.include_router(messages.router)
 app.include_router(analytics.router)
 app.include_router(hims_auth.router, tags=["HIMS-Auth"])
 app.include_router(webhooks.router, tags=["HIMS-Webhooks"])
+
+
+@app.get("/hims/status")
+def hims_status():
+    """HIMS connection status check used by frontend."""
+    db = SessionLocal()
+    try:
+        from .models import HIMSConnection
+        active = db.query(HIMSConnection).filter(HIMSConnection.is_active == True).first()
+        return {"connected": active is not None}
+    except Exception:
+        return {"connected": False}
+    finally:
+        db.close()
 
 
 @app.get("/")
