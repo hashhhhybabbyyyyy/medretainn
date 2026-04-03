@@ -25,40 +25,24 @@ const PatientNotes: React.FC<PatientNotesProps> = ({ patientId }) => {
   const loadNotes = async () => {
     setLoading(true);
     try {
-      // In demo mode, generate sample notes
-      const sampleNotes: PatientNote[] = [
-        {
-          id: '1',
-          content: 'Patient called to schedule follow-up appointment for diabetes management. Requested morning slot.',
-          created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-          created_by: 'Dr. Sarah Chen',
-          type: 'call'
-        },
-        {
-          id: '2',
-          content: 'Completed routine check-up. Blood pressure elevated (160/95). Adjusted medication dosage. Patient advised to monitor BP daily.',
-          created_at: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-          created_by: 'Dr. Michael Rodriguez',
-          type: 'visit'
-        },
-        {
-          id: '3',
-          content: 'High risk alert: Patient missed last 2 scheduled appointments. WhatsApp message sent with rescheduling options.',
-          created_at: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
-          created_by: 'System Alert',
-          type: 'alert'
-        },
-        {
-          id: '4',
-          content: 'Patient reported feeling dizzy after starting new medication. Advised to take with food and continue monitoring.',
-          created_at: new Date(Date.now() - 604800000).toISOString(), // 7 days ago
-          created_by: 'Nurse Jennifer Wilson',
-          type: 'note'
-        }
-      ];
-      setNotes(sampleNotes);
+      if (!patientId) {
+        setNotes([]);
+        return;
+      }
+
+      const res = await fetch(`/api/patients/${patientId}/notes`);
+      if (!res.ok) {
+        // If backend doesn't expose notes yet, show empty state
+        setNotes([]);
+        return;
+      }
+
+      const data = await res.json();
+      const notesData: PatientNote[] = Array.isArray(data) ? data : (data.notes || []);
+      setNotes(notesData);
     } catch (error) {
       console.error('Failed to load notes:', error);
+      setNotes([]);
     } finally {
       setLoading(false);
     }

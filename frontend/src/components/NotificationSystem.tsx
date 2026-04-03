@@ -40,64 +40,10 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ position = 'top
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  // Simulate some real-time notifications for demo
+  // Production: no demo simulation. Real notifications should be pushed
+  // from the backend or triggered by application events.
   useEffect(() => {
-    const simulateNotifications = () => {
-      const demoNotifications = [
-        {
-          type: 'warning' as const,
-          title: 'High Risk Patient Alert',
-          message: 'Patient P042 (Maria Rodriguez) has missed 3 appointments. Immediate follow-up required.',
-          actions: [
-            { label: 'View Patient', action: () => alert('Navigate to patient'), style: 'primary' as const },
-            { label: 'Send Message', action: () => alert('Send WhatsApp'), style: 'secondary' as const }
-          ]
-        },
-        {
-          type: 'success' as const,
-          title: 'Batch Created Successfully',
-          message: 'High Risk Diabetes batch with 25 patients is ready for outreach.',
-          actions: [
-            { label: 'View Batch', action: () => alert('Navigate to batch'), style: 'primary' as const }
-          ]
-        },
-        {
-          type: 'info' as const,
-          title: 'ML Model Update',
-          message: 'Patient risk scores updated with latest data. 15 patients moved to high risk category.',
-          actions: [
-            { label: 'View Analytics', action: () => alert('Navigate to analytics'), style: 'primary' as const }
-          ]
-        },
-        {
-          type: 'error' as const,
-          title: 'Message Delivery Failed',
-          message: 'WhatsApp message to P018 failed. Phone number may be invalid.',
-          actions: [
-            { label: 'Update Contact', action: () => alert('Update contact info'), style: 'primary' as const }
-          ]
-        }
-      ];
-
-      // Randomly show a notification every 10-20 seconds
-      const randomNotification = demoNotifications[Math.floor(Math.random() * demoNotifications.length)];
-      addNotification(randomNotification);
-    };
-
-    // Initial notification after 3 seconds
-    const initialTimeout = setTimeout(simulateNotifications, 3000);
-
-    // Then show notifications every 15-30 seconds
-    const interval = setInterval(() => {
-      if (Math.random() > 0.7) { // 30% chance every interval
-        simulateNotifications();
-      }
-    }, 15000);
-
-    return () => {
-      clearTimeout(initialTimeout);
-      clearInterval(interval);
-    };
+    return () => {};
   }, []);
 
   const getPositionStyle = () => {
