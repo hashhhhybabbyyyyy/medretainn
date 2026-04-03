@@ -36,5 +36,4 @@ python-dateutil==2.8.2
 
 # Encryption and Database for HIMS
 cryptography==42.0.5
-pymysql==1.1.0 
- 
+pymysql==1.1.0
