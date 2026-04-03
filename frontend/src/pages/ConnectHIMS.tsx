@@ -41,19 +41,19 @@ const ConnectHIMS: React.FC<ConnectHIMSProps> = ({ onConnected }) => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950 to-slate-950">
+        <div className="min-h-screen bg-black flex items-center justify-center p-6">
             <div className="w-full max-w-md">
-                <div className="text-center mb-10">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-blue-600/10 border border-blue-500/20 mb-6 shadow-[0_0_40px_-10px_rgba(37,99,235,0.3)]">
-                        <ShieldCheck className="w-10 h-10 text-blue-500" />
+                <div className="text-center mb-8">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-black border border-[#003927] mb-4 shadow-sm">
+                        <ShieldCheck className="w-9 h-9 text-[#00d48a]" />
                     </div>
-                    <h1 className="text-4xl font-bold text-white tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
-                        Tathya Retention Engine
+                    <h1 className="text-3xl font-bold text-white tracking-tight mb-2">
+                        MedRetain
                     </h1>
-                    <p className="text-slate-400 text-lg">Connect your HIMS to secure your patient data</p>
+                    <p className="text-slate-400 text-sm">Connect your HIMS to sync patient data</p>
                 </div>
 
-                <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+                <div className="bg-[#000] border border-white/6 rounded-2xl p-6">
                     <form onSubmit={handleConnect} className="space-y-6">
                         {error && (
                             <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl text-sm font-medium animate-in fade-in slide-in-from-top-1">
@@ -67,7 +67,7 @@ const ConnectHIMS: React.FC<ConnectHIMSProps> = ({ onConnected }) => {
                                 <select
                                     value={himsName}
                                     onChange={(e) => setHimsName(e.target.value)}
-                                    className="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none"
+                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl px-5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00d48a]/50 transition-all appearance-none"
                                 >
                                     <option>Doctor 24/7</option>
                                     <option>InstaHealth</option>
@@ -87,7 +87,7 @@ const ConnectHIMS: React.FC<ConnectHIMSProps> = ({ onConnected }) => {
                                     placeholder="H-1029"
                                     value={hospitalId}
                                     onChange={(e) => setHospitalId(e.target.value)}
-                                    className="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl px-5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00d48a]/50 transition-all"
                                     required
                                 />
                             </div>
@@ -96,7 +96,7 @@ const ConnectHIMS: React.FC<ConnectHIMSProps> = ({ onConnected }) => {
                                 <button
                                     type="button"
                                     onClick={() => setIsDBMode(!isDBMode)}
-                                    className={`w-full py-4 rounded-2xl border transition-all font-medium flex items-center justify-center gap-2 ${isDBMode ? 'bg-blue-600/10 border-blue-500/30 text-blue-400' : 'bg-slate-800/50 border-white/10 text-slate-300'}`}
+                                    className={`w-full py-3 rounded-2xl border transition-all font-medium flex items-center justify-center gap-2 ${isDBMode ? 'bg-[#07110f] border-[#003927] text-[#00d48a]' : 'bg-[#0a0a0a] border-white/10 text-slate-300'}`}
                                 >
                                     {isDBMode ? <Server className="w-4 h-4" /> : <Loader2 className="w-4 h-4" />}
                                     {isDBMode ? 'Direct DB' : 'REST API'}
@@ -112,7 +112,7 @@ const ConnectHIMS: React.FC<ConnectHIMSProps> = ({ onConnected }) => {
                                     placeholder="db.hospital.com"
                                     value={host}
                                     onChange={(e) => setHost(e.target.value)}
-                                    className="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono text-sm"
+                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl px-5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00d48a]/50 transition-all font-mono text-sm"
                                     required
                                 />
                             </div>
@@ -135,7 +135,7 @@ const ConnectHIMS: React.FC<ConnectHIMSProps> = ({ onConnected }) => {
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl px-5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00d48a]/50 transition-all"
                                     required
                                 />
                             </div>
@@ -144,16 +144,16 @@ const ConnectHIMS: React.FC<ConnectHIMSProps> = ({ onConnected }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-5 rounded-2xl shadow-xl hover:shadow-blue-500/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-lg"
+                            className="w-full bg-[#00d48a] text-black font-bold py-3 rounded-2xl shadow-sm active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-base"
                         >
-                            {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Hospital className="w-6 h-6" />}
-                            {loading ? 'Authenticating...' : 'Securely Connect HIMS'}
+                            {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Hospital className="w-6 h-6 text-black" />}
+                            {loading ? 'Authenticating...' : 'Connect HIMS'}
                         </button>
                     </form>
 
-                    <p className="mt-8 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-emerald-500/70" />
-                        End-to-end encrypted connection with AES-256
+                    <p className="mt-6 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-[#00d48a]/80" />
+                        Encrypted connection
                     </p>
                 </div>
             </div>

@@ -1,5 +1,5 @@
 """
-JWT Authentication Router for Tathya CRM.
+JWT Authentication Router for MedRetain CRM.
 Handles user login, token generation, and user management.
 """
 import os
@@ -18,7 +18,7 @@ from ..models import CRMUser
 
 # ─── Config ──────────────────────────────────────────────────────────────────
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "tathya-crm-super-secret-key-change-in-production-2025")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "medretain-crm-super-secret-key-change-in-production-2026")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "480"))  # 8 hours
 
@@ -89,14 +89,14 @@ def ensure_default_admin(db: Session):
     if count == 0:
         admin = CRMUser(
             username="admin",
-            hashed_password=hash_password("tathya@admin123"),
+            hashed_password=hash_password("medretain@admin123"),
             full_name="System Administrator",
             role="admin",
             is_active=True,
         )
         db.add(admin)
         db.commit()
-        print("✅ Default admin user created: admin / tathya@admin123")
+        print("✅ Default admin user created: admin / medretain@admin123")
 
 # ─── Routes ──────────────────────────────────────────────────────────────────
 

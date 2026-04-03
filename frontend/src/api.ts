@@ -1,5 +1,5 @@
 /**
- * Tathya CRM - Production API Client
+ * MedRetain CRM - Production API Client
  * All calls go to VITE_API_URL (FastAPI backend)
  */
 
@@ -8,21 +8,21 @@ const BASE = (import.meta as any).env.VITE_API_URL || '/api';
 // ─── Auth helpers ─────────────────────────────────────────────────────────────
 
 export function getToken(): string | null {
-    return localStorage.getItem('tathya_token');
+    return localStorage.getItem('medretain_token');
 }
 export function setToken(token: string) {
-    localStorage.setItem('tathya_token', token);
+    localStorage.setItem('medretain_token', token);
 }
 export function clearToken() {
-    localStorage.removeItem('tathya_token');
-    localStorage.removeItem('tathya_user');
+    localStorage.removeItem('medretain_token');
+    localStorage.removeItem('medretain_user');
 }
 export function getUser(): any {
-    const u = localStorage.getItem('tathya_user');
+    const u = localStorage.getItem('medretain_user');
     return u ? JSON.parse(u) : null;
 }
 export function saveUser(user: any) {
-    localStorage.setItem('tathya_user', JSON.stringify(user));
+    localStorage.setItem('medretain_user', JSON.stringify(user));
 }
 
 // ─── Core fetch wrapper ───────────────────────────────────────────────────────
@@ -252,6 +252,10 @@ export async function sendBatchMessages(payload: any): Promise<any> {
 
 export async function checkHIMSConnection(): Promise<any> {
     return api<any>('/hims/status');
+}
+
+export async function getHIMSConnections(): Promise<any> {
+    return api<any>('/hims/connection-status');
 }
 
 export async function connectHIMS(payload: any): Promise<any> {

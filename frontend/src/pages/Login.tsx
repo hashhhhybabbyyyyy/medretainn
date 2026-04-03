@@ -37,53 +37,51 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         <div style={{
             minHeight: '100vh',
             background: 'radial-gradient(ellipse at 60% 0%, rgba(37,99,235,0.15) 0%, #060912 60%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '24px',
-            fontFamily: "'Inter', 'SF Pro Display', system-ui, sans-serif",
-        }}>
-            {/* Background grid */}
-            <div style={{
-                position: 'fixed', inset: 0, pointerEvents: 'none',
-                backgroundImage: 'linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)',
-                backgroundSize: '60px 60px',
-            }} />
-
-            <div style={{ width: '100%', maxWidth: '440px', position: 'relative', zIndex: 1 }}>
-
+                                <div style={{
+                                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                    width: '64px', height: '64px', borderRadius: '12px',
+                                    background: '#000',
+                                    border: '2px solid #00d48a',
+                                    marginBottom: '20px',
+                                }}>
+                                    <ShieldCheck size={28} color="#00d48a" />
+                                </div>
+                                <h1 style={{ margin: '0 0 8px', fontSize: '28px', fontWeight: 800, color: '#fff', letterSpacing: '-0.5px' }}>
+                                    MedRetain
+                                </h1>
+                                <p style={{ margin: 0, color: '#9ca3af', fontSize: '14px', fontWeight: 500 }}>
+                                    Patient retention dashboard
+                                </p>
                 {/* Logo / Brand */}
                 <div style={{ textAlign: 'center', marginBottom: '48px' }}>
                     <div style={{
                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        width: '72px', height: '72px', borderRadius: '24px',
-                        background: 'linear-gradient(135deg, #1d4ed8, #4f46e5)',
-                        boxShadow: '0 0 60px rgba(79,70,229,0.35)',
-                        marginBottom: '24px',
+                        width: '64px', height: '64px', borderRadius: '12px',
+                        background: '#0a0a0a',
+                        border: '2px solid #00d48f',
+                        marginBottom: '16px',
                     }}>
-                        <ShieldCheck size={36} color="#fff" />
+                        <ShieldCheck size={32} color="#00d48f" />
                     </div>
-                    <h1 style={{ margin: '0 0 8px', fontSize: '32px', fontWeight: 800, color: '#fff', letterSpacing: '-0.5px' }}>
-                        Tathya CRM
-                    </h1>
-                    <p style={{ margin: 0, color: '#6b7280', fontSize: '15px', fontWeight: 500 }}>
-                        Patient Retention Intelligence Platform
+                    <h1 style={{ margin: '0 0 6px', fontSize: '28px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.3px' }}>
+                                <p style={{ margin: '0 0 24px', color: '#9ca3af', fontSize: '13px' }}>
+                                    Sign in with your CRM account or connect a HIMS
+                                </p>
+                        Minimal Patient Retention Dashboard
                     </p>
                 </div>
 
                 {/* Card */}
                 <div style={{
-                    background: 'rgba(15,20,30,0.8)',
-                    backdropFilter: 'blur(24px)',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                    borderRadius: '28px',
-                    padding: '40px',
-                    boxShadow: '0 32px 64px rgba(0,0,0,0.5)',
-                }}>
+                        background: '#000',
+                        border: '1px solid rgba(255,255,255,0.04)',
+                        borderRadius: '16px',
+                        padding: '36px',
+                    }}>
                     <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: '#fff' }}>
                         Sign in to your account
                     </h2>
-                    <p style={{ margin: '0 0 32px', color: '#6b7280', fontSize: '14px' }}>
+                    <p style={{ margin: '0 0 24px', color: '#9ca3af', fontSize: '13px' }}>
                         Enter your HIMS portal credentials to continue
                     </p>
 
@@ -117,15 +115,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                                 autoFocus
                                 disabled={loading}
                                 style={{
-                                    width: '100%', padding: '14px 16px', boxSizing: 'border-box',
-                                    background: 'rgba(0,0,0,0.35)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    borderRadius: '14px', color: '#fff', fontSize: '15px',
-                                    outline: 'none', transition: 'border-color 0.2s',
-                                    fontFamily: 'inherit',
-                                }}
-                                onFocus={(e) => e.target.style.borderColor = 'rgba(79,70,229,0.6)'}
-                                onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                                        width: '100%', padding: '12px 14px', boxSizing: 'border-box',
+                                        background: '#0a0a0a',
+                                        border: '1px solid rgba(255,255,255,0.06)',
+                                        borderRadius: '10px', color: '#fff', fontSize: '15px',
+                                        outline: 'none', transition: 'border-color 0.15s',
+                                        fontFamily: 'inherit',
+                                    }}
+                                onFocus={(e) => e.target.style.borderColor = '#00d48f'}
+                                onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.06)'}
                             />
                         </div>
 
@@ -144,15 +142,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                                     autoComplete="current-password"
                                     disabled={loading}
                                     style={{
-                                        width: '100%', padding: '14px 50px 14px 16px', boxSizing: 'border-box',
-                                        background: 'rgba(0,0,0,0.35)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        borderRadius: '14px', color: '#fff', fontSize: '15px',
-                                        outline: 'none', transition: 'border-color 0.2s',
-                                        fontFamily: 'inherit',
-                                    }}
-                                    onFocus={(e) => e.target.style.borderColor = 'rgba(79,70,229,0.6)'}
-                                    onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                                            width: '100%', padding: '12px 48px 12px 14px', boxSizing: 'border-box',
+                                            background: '#0a0a0a',
+                                            border: '1px solid rgba(255,255,255,0.06)',
+                                            borderRadius: '10px', color: '#fff', fontSize: '15px',
+                                            outline: 'none', transition: 'border-color 0.15s',
+                                            fontFamily: 'inherit',
+                                        }}
+                                    onFocus={(e) => e.target.style.borderColor = '#00d48f'}
+                                    onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.06)'}
                                 />
                                 <button
                                     type="button"
@@ -174,10 +172,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                             type="submit"
                             disabled={loading}
                             style={{
-                                width: '100%', padding: '15px',
-                                background: loading ? 'rgba(79,70,229,0.4)' : 'linear-gradient(135deg, #2563eb, #4f46e5)',
-                                border: 'none', borderRadius: '14px',
-                                color: '#fff', fontSize: '15px', fontWeight: 700,
+                                width: '100%', padding: '12px',
+                                    background: loading ? '#033' : '#00d48f',
+                                    border: 'none', borderRadius: '10px',
+                                    color: '#000', fontSize: '15px', fontWeight: 700,
                                 cursor: loading ? 'not-allowed' : 'pointer',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
                                 transition: 'all 0.2s',
@@ -187,9 +185,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                             }}
                         >
                             {loading ? (
-                                <>
-                                    <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                                    Authenticating...
+                            <p style={{ textAlign: 'center', margin: '20px 0 0', fontSize: '12px', color: '#6b7280', fontWeight: 500 }}>
+                                © 2026 MedRetain · All rights reserved
+                            </p>
                                 </>
                             ) : (
                                 'Sign In to Dashboard'
@@ -198,16 +196,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     </form>
 
                     {/* Footer note */}
-                    <p style={{ margin: '28px 0 0', textAlign: 'center', fontSize: '12px', color: '#4b5563', lineHeight: 1.6 }}>
+                    <p style={{ margin: '20px 0 0', textAlign: 'center', fontSize: '12px', color: '#9ca3af', lineHeight: 1.6 }}>
                         Your session is encrypted and secured with JWT tokens.
-                        <br />
-                        Contact your system admin if you cannot log in.
                     </p>
                 </div>
 
                 {/* Bottom branding */}
-                <p style={{ textAlign: 'center', margin: '28px 0 0', fontSize: '12px', color: '#374151', fontWeight: 500 }}>
-                    © 2025 Tathya Health Technologies · All rights reserved
+                <p style={{ textAlign: 'center', margin: '20px 0 0', fontSize: '12px', color: '#6b7280', fontWeight: 500 }}>
+                    © 2026 MedRetain · All rights reserved
                 </p>
             </div>
 
