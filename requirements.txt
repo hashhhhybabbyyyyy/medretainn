@@ -11,6 +11,8 @@ sqlalchemy==2.0.36
 alembic==1.13.3
 
 # Data Processing
+pandas==2.2.3
+numpy==1.26.4
 
 # Machine Learning
 scikit-learn==1.5.0
@@ -34,4 +36,4 @@ python-dateutil==2.8.2
 
 # Encryption and Database for HIMS
 cryptography==42.0.5
-
+pymysql==1.1.0
