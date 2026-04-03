@@ -1,8 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import {
+  Hospital,
+  LayoutDashboard,
+  Users,
+  Layers,
+  MessageSquare,
+  BarChart3,
+  Search,
+  Bell,
+  Settings,
+  ChevronRight,
+  Menu,
+  X
+} from 'lucide-react';
 import GlobalSearch from './GlobalSearch';
-import { ThemeToggle } from './ThemeProvider';
-import { Hospital, LayoutDashboard, Users, Layers, MessageSquare, BarChart3, Search } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,17 +23,16 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Global keyboard shortcut for search (Ctrl+K or Cmd+K)
+  // Global keyboard shortcut for search
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
         event.preventDefault();
         setShowGlobalSearch(true);
       }
-      if (event.key === 'Escape') {
-        setShowGlobalSearch(false);
-      }
+      if (event.key === 'Escape') setShowGlobalSearch(false);
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -29,112 +40,86 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   }, []);
 
   const navItems = [
-    {
-      path: '/',
-      label: 'Dashboard',
-      icon: <LayoutDashboard size={20} />,
-    },
-    {
-      path: '/patients',
-      label: 'Patients',
-      icon: <Users size={20} />,
-    },
-    {
-      path: '/batches',
-      label: 'Batches',
-      icon: <Layers size={20} />,
-    },
-    {
-      path: '/messages',
-      label: 'Messages',
-      icon: <MessageSquare size={20} />,
-    },
-    {
-      path: '/analytics',
-      label: 'Analytics',
-      icon: <BarChart3 size={20} />,
-    },
+    { path: '/', label: 'Overview', icon: <LayoutDashboard size={20} /> },
+    { path: '/patients', label: 'Patient Registry', icon: <Users size={20} /> },
+    { path: '/batches', label: 'Outreach Batches', icon: <Layers size={20} /> },
+    { path: '/messages', label: 'Communication Log', icon: <MessageSquare size={20} /> },
+    { path: '/analytics', label: 'Risk Intelligence', icon: <BarChart3 size={20} /> },
   ];
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-200">
+    <div className="flex min-h-screen bg-[#05070a] text-slate-200 selection:bg-blue-500/30 selection:text-blue-200">
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-900/50 border-r border-white/5 flex flex-col fixed h-screen overflow-y-auto backdrop-blur-xl z-20">
-        {/* Logo */}
-        <div className="p-6 border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/20 flex items-center justify-center border border-blue-500/30">
+      <aside className={`fixed inset-y-0 left-0 bg-[#0a0d12] border-r border-white/5 flex flex-col z-[1000] transition-all duration-300 ${sidebarOpen ? 'w-72' : 'w-20'}`}>
+        {/* Brand Header */}
+        <div className="p-8 border-b border-white/5 flex items-center justify-between">
+          <div className={`flex items-center gap-4 transition-opacity ${sidebarOpen ? 'opacity-100' : 'opacity-0 scale-0'}`}>
+            <div className="w-12 h-12 rounded-2xl bg-blue-600/20 flex items-center justify-center border border-blue-500/20 shadow-[0_0_20px_-5px_rgba(37,99,235,0.4)]">
               <Hospital className="text-blue-500 w-6 h-6" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">
-              Tathya <span className="text-blue-500 text-sm font-medium">CRM</span>
-            </span>
+            <div>
+              <div className="text-lg font-black tracking-tight text-white leading-none">Tathya</div>
+              <div className="text-[10px] font-bold text-blue-500 tracking-[0.2em] uppercase mt-1">Retention Engine</div>
+            </div>
           </div>
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 text-slate-500 hover:text-white transition-colors">
+            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 py-6 px-3 space-y-1">
-          {/* Quick Search Button */}
-          <div className="px-3 mb-6">
-            <button
-              onClick={() => setShowGlobalSearch(true)}
-              className="w-full group flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all duration-200"
-            >
-              <div className="flex items-center gap-3 text-slate-400 group-hover:text-white">
-                <Search size={18} />
-                <span className="text-sm font-medium">Search Patients</span>
-              </div>
-              <kbd className="px-2 py-0.5 bg-slate-800 text-slate-500 rounded text-[10px] font-mono border border-white/5">
-                ⌘K
-              </kbd>
-            </button>
-          </div>
+        {/* Global Search Quick Access */}
+        <div className={`p-6 px-4 mb-4 mt-8 transition-all ${sidebarOpen ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10 pointer-events-none'}`}>
+          <button onClick={() => setShowGlobalSearch(true)} className="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl transition-all duration-300 group shadow-lg shadow-black/20">
+            <div className="flex items-center gap-3 text-slate-500 group-hover:text-slate-300">
+              <Search size={18} />
+              <span className="text-sm font-bold">Quick Search</span>
+            </div>
+            <div className="px-1.5 py-0.5 bg-slate-800 text-[10px] font-mono text-slate-500 rounded border border-white/5 tracking-tighter">⌘K</div>
+          </button>
+        </div>
 
+        {/* Nav Links */}
+        <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`
-                  flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group
-                  ${isActive
-                    ? 'bg-blue-600/10 text-white border border-blue-500/20'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'}
-                `}
-              >
-                <span className={`${isActive ? 'text-blue-500' : 'text-current'} transition-colors`}>
+              <Link key={item.path} to={item.path} className={`flex items-center gap-4 px-5 py-4 rounded-2xl font-bold text-sm transition-all relative group ${isActive ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20' : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.03]'}`}>
+                <div className={`transition-all ${isActive ? 'scale-110 rotate-0' : 'scale-100 group-hover:scale-110 group-hover:rotate-3'}`}>
                   {item.icon}
-                </span>
-                <span className="text-sm font-semibold">{item.label}</span>
+                </div>
+                <span className={`${sidebarOpen ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'} transition-all duration-300`}>{item.label}</span>
+                {isActive && <ChevronRight size={14} className="ml-auto opacity-70" />}
               </Link>
             );
           })}
         </nav>
 
-        {/* Theme Toggle & Bottom Actions */}
-        <div className="p-4 border-t border-white/5 space-y-4">
-          <ThemeToggle />
-          <div className="px-3 text-[10px] uppercase tracking-widest font-bold text-slate-600">
-            System v2.0 - Production
-          </div>
+        {/* System Settings & User */}
+        <div className="p-6 border-t border-white/5 space-y-4">
+          <button className="flex items-center gap-4 text-slate-500 hover:text-white transition-colors px-4 py-2">
+            <Bell size={18} />
+            {sidebarOpen && <span className="text-sm font-bold">Alert Inbox</span>}
+          </button>
+          <button className="flex items-center gap-4 text-slate-500 hover:text-white transition-colors px-4 py-2">
+            <Settings size={18} />
+            {sidebarOpen && <span className="text-sm font-bold">Preferences</span>}
+          </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="ml-64 flex-1 p-8 min-h-screen relative overflow-x-hidden">
-        {/* Subtle background glow */}
-        <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none -z-10" />
-        <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+      {/* Main Content Area */}
+      <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-72' : 'ml-20'} p-10 min-h-screen relative`}>
+        {/* Background Orbs */}
+        <div className="fixed top-0 right-1/4 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[160px] pointer-events-none" />
+        <div className="fixed bottom-0 left-1/4 w-[600px] h-[600px] bg-indigo-600/5 rounded-full blur-[140px] pointer-events-none" />
 
-        {children}
+        <div className="max-w-7xl mx-auto relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {children}
+        </div>
       </main>
 
-      {/* Global Search Modal */}
-      <GlobalSearch
-        isOpen={showGlobalSearch}
-        onClose={() => setShowGlobalSearch(false)}
-      />
+      {/* Modals */}
+      <GlobalSearch isOpen={showGlobalSearch} onClose={() => setShowGlobalSearch(false)} />
     </div>
   );
 };

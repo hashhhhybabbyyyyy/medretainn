@@ -53,65 +53,14 @@ const Batches: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-
-      // Load data with individual error handling
-      let batchesData: Batch[] = [];
-      let options: FilterOptions | null = null;
-
-      try {
-        batchesData = await getBatches();
-      } catch (err) {
-        console.error('Failed to load batches:', err);
-        // getBatches already has fallback data in its catch block
-        batchesData = await getBatches(); // This will return demo data
-      }
-
-      try {
-        options = await getFilterOptions();
-      } catch (err) {
-        console.error('Failed to load filter options:', err);
-        // getFilterOptions already has fallback data in its catch block
-        options = await getFilterOptions(); // This will return demo data
-      }
-
+      const [batchesData, options] = await Promise.all([
+        getBatches(),
+        getFilterOptions()
+      ]);
       setBatches(batchesData);
       setFilterOptions(options);
-    } catch (err) {
-      console.error('Critical error in loadData:', err);
+    } catch (err: any) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
-
-      // Set fallback data to prevent blank screen
-      setBatches([]);
-      setFilterOptions({
-        risk_levels: ['High', 'Medium', 'Low'],
-        branches: ['Downtown Hospital', 'Westside Clinic', 'Eastside Medical'],
-        segments: ['Chronic High Value', 'Chronic Regular', 'Returning', 'One-time', 'Acute High Risk'],
-        conditions: ['Diabetes', 'Hypertension', 'Heart Disease'],
-        chronic_options: ['Yes', 'No'],
-        days_overdue_options: [
-          { value: '0-30', label: '0-30 days' },
-          { value: '31-90', label: '31-90 days' },
-          { value: '90+', label: '90+ days' }
-        ],
-        satisfaction_levels: [
-          { value: '1', label: '1 star' },
-          { value: '2', label: '2 stars' },
-          { value: '3', label: '3 stars' },
-          { value: '4', label: '4 stars' },
-          { value: '5', label: '5 stars' }
-        ],
-        no_show_risk_levels: [
-          { value: 'low', label: 'Low (0-10%)' },
-          { value: 'medium', label: 'Medium (10-25%)' },
-          { value: 'high', label: 'High (25%+)' }
-        ],
-        age_groups: [
-          { value: 'young', label: 'Young (0-35)' },
-          { value: 'middle', label: 'Middle (36-55)' },
-          { value: 'senior', label: 'Senior (56-70)' },
-          { value: 'elderly', label: 'Elderly (70+)' }
-        ]
-      });
     } finally {
       setLoading(false);
     }
@@ -143,7 +92,7 @@ const Batches: React.FC = () => {
       });
       resetForm();
       await loadData();
-    } catch (err) {
+    } catch (err: any) {
       alert(err instanceof Error ? err.message : 'Failed to create batch');
     } finally {
       setCreating(false);
@@ -165,7 +114,7 @@ const Batches: React.FC = () => {
     setLabel('');
   };
 
-  const handleExpandBatch = async (batchId: number) => {
+  const handleExpandBatch = async (batchId: any) => {
     if (expandedBatch === batchId) {
       setExpandedBatch(null);
       return;
@@ -174,50 +123,46 @@ const Batches: React.FC = () => {
     if (!batchPatients[batchId]) {
       try {
         const patients = await getBatchPatients(batchId);
-        setBatchPatients((prev) => ({ ...prev, [batchId]: patients }));
-      } catch (err) {
+        setBatchPatients((prev: any) => ({ ...prev, [batchId]: patients }));
+      } catch (err: any) {
         alert(err instanceof Error ? err.message : 'Failed to load batch patients');
       }
     }
   };
 
-  const handleMarkActioned = async (batchId: number, patientId: string) => {
+  const handleMarkActioned = async (batchId: any, patientId: any) => {
     try {
       await markBatchPatientActioned(batchId, patientId);
-      setBatchPatients((prev) => ({
+      setBatchPatients((prev: any) => ({
         ...prev,
-        [batchId]: prev[batchId].map((p) =>
-          p.patient_id === patientId ? { ...p, actioned: true } : p
+        [batchId]: prev[batchId].map((p: any) =>
+          p.patient_id === patientId ? { ...p, action_status: 'actioned' } : p
         ),
       }));
-    } catch (err) {
+    } catch (err: any) {
       alert(err instanceof Error ? err.message : 'Failed to mark as actioned');
     }
   };
 
-  const handleSendMessage = async (patientId: string) => {
+  const handleSendMessage = async (patientId: any) => {
     try {
       setSendingMessage(patientId);
       await sendMessage({ patient_id: patientId, message_type: 'reengagement' });
       alert('Message sent successfully!');
-    } catch (err) {
+    } catch (err: any) {
       alert(err instanceof Error ? err.message : 'Failed to send message');
     } finally {
       setSendingMessage(null);
     }
   };
 
-  // Safe JSON parsing helper
-  const parseFilterCriteria = (filterCriteria: string): any => {
+  const parseFilterCriteria = (filterCriteria: any): any => {
     if (!filterCriteria) return {};
-
+    if (typeof filterCriteria === 'object') return filterCriteria;
     try {
-      // Try to parse as JSON first
       return JSON.parse(filterCriteria);
     } catch {
-      // If it fails, it's probably a plain string (legacy format)
-      // Return a basic object with the string as a label
-      return { legacy_label: filterCriteria };
+      return { legacy_label: String(filterCriteria) };
     }
   };
 
@@ -256,486 +201,210 @@ const Batches: React.FC = () => {
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+    <div className="animate-in fade-in duration-500">
+      <div className="flex justify-between items-start mb-8">
         <div>
-          <h1 style={{ margin: '0 0 8px', fontSize: '32px', fontWeight: 700, color: '#fff' }}>
-            Patient Batches
-          </h1>
-          <p style={{ margin: 0, fontSize: '16px', color: '#9ca3af' }}>
-            Create targeted outreach campaigns with smart patient segmentation
-          </p>
+          <h1 className="text-3xl font-bold text-white mb-2">Patient Batches</h1>
+          <p className="text-slate-400">Targeted outreach campaigns for specific patient segments</p>
         </div>
-        <div style={{
-          padding: '12px 20px',
-          backgroundColor: 'rgba(0, 212, 168, 0.1)',
-          borderRadius: '8px',
-          border: '1px solid rgba(0, 212, 168, 0.2)'
-        }}>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: '#00d4a8' }}>{batches.length}</div>
-          <div style={{ fontSize: '12px', color: '#9ca3af' }}>Active Batches</div>
+        <div className="px-5 py-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
+          <div className="text-2xl font-black text-emerald-500 leading-tight">{batches.length}</div>
+          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Batches</div>
         </div>
       </div>
 
       {/* Create Batch Card */}
-      <div style={{
-        backgroundColor: '#141921',
-        padding: '28px',
-        borderRadius: '16px',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        marginBottom: '32px',
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div className="bg-[#141921] p-8 rounded-3xl border border-white/5 mb-8 shadow-2xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[80px] -mr-32 -mt-32" />
+
+        <div className="flex justify-between items-center mb-8 relative z-10">
           <div>
-            <h2 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: 600, color: '#fff' }}>
-              Create New Batch
-            </h2>
-            <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>
-              Select criteria to segment patients for outreach
-            </p>
+            <h2 className="text-xl font-bold text-white mb-1">Create New Outreach Batch</h2>
+            <p className="text-slate-500 text-sm">Select clinical and demographic criteria for segmentation</p>
           </div>
           {getActiveFilterCount() > 0 && (
-            <div style={{
-              padding: '6px 12px',
-              backgroundColor: 'rgba(76, 201, 240, 0.1)',
-              borderRadius: '20px',
-              border: '1px solid rgba(76, 201, 240, 0.3)',
-              color: '#4cc9f0',
-              fontSize: '13px',
-              fontWeight: 500
-            }}>
-              {getActiveFilterCount()} filter{getActiveFilterCount() > 1 ? 's' : ''} active
+            <div className="px-3 py-1 bg-blue-600/10 border border-blue-500/20 text-blue-400 rounded-full text-xs font-bold ring-4 ring-blue-600/5">
+              {getActiveFilterCount()} Active Filters
             </div>
           )}
         </div>
 
-        {/* Primary Filters */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '16px' }}>
-          <div>
-            <label style={labelStyle}>Churn Risk Level</label>
-            <select value={riskLevel} onChange={(e) => setRiskLevel(e.target.value)} style={selectStyle}>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 relative z-10">
+          <div className="space-y-1.5">
+            <label style={labelStyle}>Risk Profile</label>
+            <select value={riskLevel} onChange={(e: any) => setRiskLevel(e.target.value)} style={selectStyle}>
               <option value="">Any Risk Level</option>
-              {filterOptions?.risk_levels?.map(level => (
-                <option key={level} value={level}>{level} Risk</option>
-              )) || []}
+              <option value="High">High Risk</option>
+              <option value="Medium">Medium Risk</option>
+              <option value="Low">Low Risk</option>
             </select>
           </div>
-
-          <div>
-            <label style={labelStyle}>Patient Segment</label>
-            <select value={segment} onChange={(e) => setSegment(e.target.value)} style={selectStyle}>
-              <option value="">Any Segment</option>
-              {filterOptions?.segments?.map(seg => (
-                <option key={seg} value={seg}>{seg}</option>
-              )) || []}
-            </select>
-          </div>
-
-          <div>
-            <label style={labelStyle}>Hospital Branch</label>
-            <select value={branch} onChange={(e) => setBranch(e.target.value)} style={selectStyle}>
+          <div className="space-y-1.5">
+            <label style={labelStyle}>Branch Location</label>
+            <select value={branch} onChange={(e: any) => setBranch(e.target.value)} style={selectStyle}>
               <option value="">Any Branch</option>
-              {filterOptions?.branches?.map(b => (
-                <option key={b} value={b}>{b}</option>
-              )) || []}
+              {filterOptions?.branches?.map((b: any) => <option key={b} value={b}>{b}</option>)}
             </select>
           </div>
-
-          <div>
-            <label style={labelStyle}>Days Overdue</label>
-            <select value={daysOverdue} onChange={(e) => setDaysOverdue(e.target.value)} style={selectStyle}>
-              <option value="">Any Duration</option>
-              {filterOptions?.days_overdue_options?.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              )) || []}
+          <div className="space-y-1.5">
+            <label style={labelStyle}>Clinical Condition</label>
+            <select value={condition} onChange={(e: any) => setCondition(e.target.value)} style={selectStyle}>
+              <option value="">Any Condition</option>
+              {filterOptions?.conditions?.map((c: any) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label style={labelStyle}>Patient Segment</label>
+            <select value={segment} onChange={(e: any) => setSegment(e.target.value)} style={selectStyle}>
+              <option value="">Any Segment</option>
+              {filterOptions?.segments?.map((s: any) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>
 
-        {/* Advanced Filters Toggle */}
-        <button
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#4cc9f0',
-            fontSize: '14px',
-            cursor: 'pointer',
-            padding: '8px 0',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            marginBottom: '16px'
-          }}
-        >
-          {showAdvanced ? '▼' : '▶'} Advanced Filters
-        </button>
-
         {showAdvanced && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '16px',
-            marginBottom: '16px',
-            padding: '20px',
-            backgroundColor: 'rgba(0, 0, 0, 0.2)',
-            borderRadius: '12px'
-          }}>
-            <div>
-              <label style={labelStyle}>Chronic Condition</label>
-              <select value={isChronic} onChange={(e) => setIsChronic(e.target.value)} style={selectStyle}>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 pt-4 border-t border-white/5 animate-in slide-in-from-top-2">
+            <div className="space-y-1.5">
+              <label style={labelStyle}>Chronic Status</label>
+              <select value={isChronic} onChange={(e: any) => setIsChronic(e.target.value)} style={selectStyle}>
                 <option value="">Any</option>
-                <option value="Yes">Chronic Patients</option>
+                <option value="Yes">Chronic Only</option>
                 <option value="No">Non-Chronic</option>
               </select>
             </div>
-
-            <div>
-              <label style={labelStyle}>Satisfaction Level</label>
-              <select value={satisfactionLevel} onChange={(e) => setSatisfactionLevel(e.target.value)} style={selectStyle}>
+            <div className="space-y-1.5">
+              <label style={labelStyle}>Retention Threshold</label>
+              <select value={satisfactionLevel} onChange={(e: any) => setSatisfactionLevel(e.target.value)} style={selectStyle}>
                 <option value="">Any Satisfaction</option>
-                {filterOptions?.satisfaction_levels?.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                )) || []}
+                <option value="1">1 Star</option>
+                <option value="2">2 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="5">5 Stars</option>
               </select>
             </div>
-
-            <div>
-              <label style={labelStyle}>No-Show Risk</label>
-              <select value={noShowRisk} onChange={(e) => setNoShowRisk(e.target.value)} style={selectStyle}>
-                <option value="">Any No-Show Rate</option>
-                {filterOptions?.no_show_risk_levels?.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                )) || []}
-              </select>
-            </div>
-
-            <div>
-              <label style={labelStyle}>Age Group</label>
-              <select value={ageGroup} onChange={(e) => setAgeGroup(e.target.value)} style={selectStyle}>
-                <option value="">Any Age</option>
-                {filterOptions?.age_groups?.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                )) || []}
-              </select>
-            </div>
-
-            <div>
-              <label style={labelStyle}>Primary Condition</label>
-              <select value={condition} onChange={(e) => setCondition(e.target.value)} style={selectStyle}>
-                <option value="">Any Condition</option>
-                {filterOptions?.conditions?.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                )) || []}
-              </select>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '12px 0' }}>
-                <input
-                  type="checkbox"
-                  checked={whatsappOnly}
-                  onChange={(e) => setWhatsappOnly(e.target.checked)}
-                  style={{ width: '18px', height: '18px', accentColor: '#00d4a8' }}
-                />
-                <span style={{ color: '#fff', fontSize: '14px' }}>WhatsApp Only</span>
+            <div className="flex items-end pb-3">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input type="checkbox" checked={whatsappOnly} onChange={(e: any) => setWhatsappOnly(e.target.checked)} className="w-5 h-5 rounded-lg border-white/10 bg-black/40 text-emerald-500 focus:ring-emerald-500/20 appearance-none border checked:bg-emerald-500 transition-all" />
+                <span className="text-sm font-bold text-slate-400 group-hover:text-white transition-colors">WhatsApp Eligible Only</span>
               </label>
             </div>
           </div>
         )}
 
-        {/* Batch Settings */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '2fr 1fr 1fr',
-          gap: '16px',
-          padding: '20px',
-          backgroundColor: 'rgba(0, 212, 168, 0.05)',
-          borderRadius: '12px',
-          border: '1px solid rgba(0, 212, 168, 0.1)'
-        }}>
-          <div>
-            <label style={labelStyle}>Batch Label *</label>
-            <input
-              type="text"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              placeholder="e.g., High Risk Diabetes Patients - March 2026"
-              style={{
-                ...selectStyle,
-                border: label.trim() ? '1px solid rgba(0, 212, 168, 0.3)' : '1px solid rgba(255, 255, 255, 0.12)',
-              }}
-            />
-          </div>
+        <button onClick={() => setShowAdvanced(!showAdvanced)} className="text-blue-400 text-xs font-bold hover:text-blue-300 transition-colors flex items-center gap-1 mb-6">
+          {showAdvanced ? '─ Hide Advanced Settings' : '┼ Show Advanced Settings'}
+        </button>
 
-          <div>
-            <label style={labelStyle}>Batch Size</label>
-            <select value={batchSize} onChange={(e) => setBatchSize(Number(e.target.value))} style={selectStyle}>
-              <option value={10}>10 patients</option>
-              <option value={25}>25 patients</option>
-              <option value={50}>50 patients</option>
-              <option value={100}>100 patients</option>
+        <div className="flex gap-4 items-end bg-black/20 p-6 rounded-2xl border border-white/5">
+          <div className="flex-1 space-y-1.5">
+            <label style={labelStyle}>Batch Identifier *</label>
+            <input type="text" value={label} onChange={(e: any) => setLabel(e.target.value)} placeholder="e.g. Chronic Re-engagement Q2" className="w-full bg-[#0a0d12] border border-white/10 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
+          </div>
+          <div className="w-40 space-y-1.5">
+            <label style={labelStyle}>Target Size</label>
+            <select value={batchSize} onChange={(e: any) => setBatchSize(Number(e.target.value))} style={selectStyle} className="!py-3.5">
+              <option value={25}>25 Patients</option>
+              <option value={50}>50 Patients</option>
+              <option value={100}>100 Patients</option>
             </select>
           </div>
-
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px' }}>
-            <ActionButton onClick={handleCreateBatch} loading={creating} style={{ flex: 1 }}>
-              {creating ? 'Creating...' : 'Create Batch'}
-            </ActionButton>
-            <button
-              onClick={resetForm}
-              style={{
-                padding: '12px 20px',
-                backgroundColor: 'transparent',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '8px',
-                color: '#9ca3af',
-                fontSize: '14px',
-                cursor: 'pointer'
-              }}
-            >
-              Reset
-            </button>
-          </div>
+          <ActionButton onClick={handleCreateBatch} loading={creating} className="!py-3.5 !px-8">
+            {creating ? 'Processing...' : 'Create Campaign'}
+          </ActionButton>
         </div>
       </div>
 
-      {/* Batches List */}
-      <div>
-        <h2 style={{ margin: '0 0 20px', fontSize: '20px', fontWeight: 600, color: '#fff' }}>
-          Campaign Batches
-        </h2>
+      {/* List */}
+      <div className="space-y-4">
+        {batches.map((batch: any) => {
+          const patients = batchPatients[batch.id] || [];
+          const actionedCount = patients.filter((p: any) => p.action_status === 'actioned').length;
+          const totalCount = batch.patient_count || batch.batch_size;
+          const progressPercent = (actionedCount / totalCount) * 100;
+          const criteria = parseFilterCriteria(batch.filter_criteria);
 
-        {loading ? (
-          <div style={{ padding: '60px', textAlign: 'center' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              border: '3px solid rgba(255,255,255,0.1)',
-              borderTopColor: '#4cc9f0',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 16px'
-            }} />
-            <div style={{ color: '#9ca3af' }}>Loading batches...</div>
-          </div>
-        ) : error ? (
-          <div style={{
-            backgroundColor: '#141921',
-            padding: '24px',
-            borderRadius: '12px',
-            border: '1px solid rgba(255, 107, 107, 0.3)',
-            color: '#ff6b6b',
-          }}>
-            Error: {error}
-          </div>
-        ) : batches.length === 0 ? (
-          <div style={{
-            backgroundColor: '#141921',
-            padding: '60px 24px',
-            borderRadius: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px', opacity: 0.5 }}>📦</div>
-            <h3 style={{ margin: '0 0 12px', fontSize: '20px', fontWeight: 600, color: '#fff' }}>
-              No batches created yet
-            </h3>
-            <p style={{ margin: 0, fontSize: '15px', color: '#9ca3af', maxWidth: '400px', marginInline: 'auto' }}>
-              Create your first patient batch using the filters above to start your outreach campaign
-            </p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {batches.map((batch) => {
-              const patients = batchPatients[batch.id] || [];
-              const actionedCount = patients.filter((p) => p.actioned).length;
-              const totalCount = batch.patient_count || batch.batch_size;
-              const progressPercent = totalCount > 0 ? (actionedCount / totalCount) * 100 : 0;
-              const filters = parseFilterCriteria(batch.filter_criteria || '');
-
-              return (
-                <div key={batch.id} style={{
-                  backgroundColor: '#141921',
-                  borderRadius: '16px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{ padding: '24px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                      <div style={{ flex: 1 }}>
-                        <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 600, color: '#fff' }}>
-                          {batch.label}
-                        </h3>
-                        <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: '#9ca3af' }}>
-                          <span>{new Date(batch.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+          return (
+            <div key={batch.id} className="bg-[#141921] rounded-3xl border border-white/5 overflow-hidden transition-all duration-300">
+              <div className="p-6 flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center font-black text-xl text-slate-400">#{batch.id}</div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-1">{batch.label}</h3>
+                    <div className="flex items-center gap-3 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                      <span>{new Date(batch.created_at).toLocaleDateString()}</span>
+                      <span>•</span>
+                      <span>{totalCount} Total Patients</span>
+                      {criteria.risk_level && (
+                        <>
                           <span>•</span>
-                          <span>{totalCount} patients</span>
-                          {(filters.risk_level || filters.legacy_label) && (
+                          <span className={criteria.risk_level === 'High' ? 'text-rose-500' : 'text-emerald-500'}>{criteria.risk_level} Risk</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-8">
+                  <div className="w-48">
+                    <div className="flex justify-between text-[10px] font-black uppercase text-slate-500 mb-2">
+                      <span>Progress</span>
+                      <span>{Math.round(progressPercent)}%</span>
+                    </div>
+                    <div className="h-1.5 bg-black/40 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+                    </div>
+                  </div>
+                  <ActionButton onClick={() => handleExpandBatch(batch.id)} variant="secondary">
+                    {expandedBatch === batch.id ? 'Collapse' : 'Manage List'}
+                  </ActionButton>
+                </div>
+              </div>
+
+              {expandedBatch === batch.id && (
+                <div className="bg-black/20 p-6 pt-0 border-t border-white/5">
+                  {patients.length > 0 && (
+                    <div className="flex justify-between items-center py-4 mb-4">
+                      <button onClick={() => {
+                        setSelectedBatchPatients(patients.filter((p: any) => p.contact_number).map((p: any) => ({ patientId: p.patient_id, phone: p.contact_number!, name: p.full_name! })));
+                        setShowBatchCampaign(true);
+                      }} className="px-6 py-3 bg-emerald-500 text-white font-bold rounded-2xl text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-emerald-500/20">🚀 Launch WhatsApp Campaign</button>
+                    </div>
+                  )}
+                  <div className="space-y-3">
+                    {patients.map((p: any) => (
+                      <div key={p.patient_id} className="bg-white/5 p-4 rounded-2xl flex items-center justify-between border border-white/5">
+                        <div className="flex items-center gap-4">
+                          <RiskBadge label={p.churn_risk_label} />
+                          <div>
+                            <div className="text-white font-bold">{p.full_name}</div>
+                            <div className="text-slate-500 text-xs">ID: {p.patient_id} • Score: {p.churn_risk_score}%</div>
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          {p.action_status === 'actioned' ? (
+                            <div className="px-5 py-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl text-xs font-bold border border-emerald-500/20">✓ Contacted</div>
+                          ) : (
                             <>
-                              <span>•</span>
-                              <span style={{
-                                color: filters.risk_level === 'High' || filters.legacy_label?.includes('High') ? '#ff6b6b' :
-                                       filters.risk_level === 'Medium' || filters.legacy_label?.includes('Medium') ? '#ffd166' : '#00d4a8'
-                              }}>
-                                {filters.risk_level ? `${filters.risk_level} Risk` : filters.legacy_label}
-                              </span>
+                              <button onClick={() => handleSendMessage(p.patient_id)} disabled={sendingMessage === p.patient_id} className="px-5 py-2.5 bg-blue-600/10 text-blue-400 rounded-xl text-xs font-bold hover:bg-blue-600/20 transition-all uppercase tracking-widest">{sendingMessage === p.patient_id ? 'Wait...' : 'Send'}</button>
+                              <button onClick={() => handleMarkActioned(batch.id, p.patient_id)} className="px-5 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-700 transition-all border border-white/5 uppercase tracking-widest">Mark Done</button>
                             </>
                           )}
                         </div>
                       </div>
-                      <ActionButton onClick={() => handleExpandBatch(batch.id)} variant="secondary">
-                        {expandedBatch === batch.id ? 'Collapse' : 'View Patients'}
-                      </ActionButton>
-                    </div>
-
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
-                        <span style={{ color: '#9ca3af' }}>Campaign Progress</span>
-                        <span style={{ color: progressPercent === 100 ? '#00d4a8' : '#fff', fontWeight: 500 }}>
-                          {actionedCount} / {totalCount} contacted ({progressPercent.toFixed(0)}%)
-                        </span>
-                      </div>
-                      <div style={{ height: '6px', backgroundColor: '#0a0d12', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{
-                          height: '100%',
-                          width: `${progressPercent}%`,
-                          background: progressPercent === 100 ? '#00d4a8' : 'linear-gradient(90deg, #4cc9f0, #00d4a8)',
-                          transition: 'width 0.3s ease',
-                        }} />
-                      </div>
-                    </div>
+                    ))}
                   </div>
-
-                  {expandedBatch === batch.id && (
-                    <div style={{
-                      borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-                      backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                      padding: '20px'
-                    }}>
-                      {/* Batch Campaign Button */}
-                      {patients.length > 0 && (
-                        <div style={{ marginBottom: '20px' }}>
-                          <button
-                            onClick={() => {
-                              const patientsForCampaign = patients
-                                .filter(p => p.contact_number)
-                                .map(p => ({
-                                  patientId: p.patient_id,
-                                  phone: p.contact_number || '',
-                                  name: p.full_name || 'Unknown'
-                                }));
-                              setSelectedBatchPatients(patientsForCampaign);
-                              setShowBatchCampaign(true);
-                            }}
-                            style={{
-                              padding: '12px 20px',
-                              backgroundColor: '#00d4a8',
-                              color: '#0a0d12',
-                              border: 'none',
-                              borderRadius: '8px',
-                              fontSize: '14px',
-                              fontWeight: '600',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px'
-                            }}
-                          >
-                            📱 Send WhatsApp Campaign ({patients.filter(p => p.contact_number).length} patients)
-                          </button>
-                        </div>
-                      )}
-
-                      {patients.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '30px', color: '#9ca3af' }}>Loading patients...</div>
-                      ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                          {patients.map((patient) => (
-                            <div key={patient.patient_id} style={{
-                              padding: '16px 20px',
-                              backgroundColor: '#141921',
-                              borderRadius: '10px',
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              border: patient.actioned ? '1px solid rgba(0, 212, 168, 0.2)' : '1px solid transparent',
-                            }}>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
-                                  <span style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>
-                                    {patient.full_name || 'Unknown'}
-                                  </span>
-                                  <RiskBadge label={patient.churn_risk_label} />
-                                  <span style={{
-                                    fontSize: '12px',
-                                    color: '#6b7280',
-                                    backgroundColor: 'rgba(255,255,255,0.05)',
-                                    padding: '2px 8px',
-                                    borderRadius: '4px'
-                                  }}>
-                                    Score: {patient.churn_risk_score?.toFixed(0) || 0}
-                                  </span>
-                                </div>
-                                <div style={{ fontSize: '13px', color: '#6b7280' }}>
-                                  ID: {patient.patient_id} • {patient.contact_number || 'No phone'}
-                                </div>
-                              </div>
-                              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                {!patient.actioned && (
-                                  <ActionButton
-                                    onClick={() => handleSendMessage(patient.patient_id)}
-                                    loading={sendingMessage === patient.patient_id}
-                                    variant="secondary"
-                                  >
-                                    {sendingMessage === patient.patient_id ? 'Sending...' : 'Send Message'}
-                                  </ActionButton>
-                                )}
-                                {patient.actioned ? (
-                                  <span style={{
-                                    padding: '10px 20px',
-                                    backgroundColor: 'rgba(0, 212, 168, 0.15)',
-                                    color: '#00d4a8',
-                                    borderRadius: '8px',
-                                    fontSize: '14px',
-                                    fontWeight: 600,
-                                  }}>
-                                    ✓ Contacted
-                                  </span>
-                                ) : (
-                                  <ActionButton onClick={() => handleMarkActioned(batch.id, patient.patient_id)}>
-                                    Mark Done
-                                  </ActionButton>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
-              );
-            })}
-          </div>
-        )}
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Batch WhatsApp Campaign Modal */}
       <BatchWhatsAppCampaign
         isOpen={showBatchCampaign}
-        onClose={() => {
-          setShowBatchCampaign(false);
-          setSelectedBatchPatients([]);
-        }}
+        onClose={() => setShowBatchCampaign(false)}
         patients={selectedBatchPatients}
       />
-
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 };
