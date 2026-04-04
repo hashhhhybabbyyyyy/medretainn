@@ -1,11 +1,41 @@
 services:
   - type: web
+    name: medretain-crm-backend
+    env: python
+    plan: free
+    region: oregon
+    branch: main
+    repo: https://github.com/hashhhhybabbyyyyy/medretainn
+
+    # Build configuration
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && gunicorn -w 4 -b 0.0.0.0:$PORT main:app
+
+    # Environment variables
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///./medretain.db
+      - key: JWT_SECRET_KEY
+        value: medretain-crm-production-secret-key-2026-change-me
+      - key: JWT_EXPIRE_MINUTES
+        value: "480"
+      - key: ENCRYPTION_KEY
+        value: your-encryption-key-here
+      - key: PORT
+        value: "8000"
+      - key: ENVIRONMENT
+        value: production
+
+    healthCheckPath: /health
+    healthCheckInterval: 30
+
+  - type: web
     name: medretain-messaging-backend
     env: node
     plan: free
     region: oregon
     branch: main
-    repo: https://github.com/vizsh/hims_crm
+    repo: https://github.com/hashhhhybabbyyyyy/medretainn
 
     # Build configuration
     buildCommand: cd messaging-service && npm install
@@ -20,13 +50,11 @@ services:
       - key: TWILIO_WHATSAPP_FROM
         value: whatsapp:+YOUR_TWILIO_NUMBER
       - key: PORT
-        value: 10000
+        value: "10000"
       - key: NODE_ENV
         value: production
       - key: FRONTEND_URL
-        value: https://hims-crm-vercel.vercel.app
-      - key: LOG_LEVEL
-        value: info
+        value: https://medretainn.vercel.app
 
     # Health check
     healthCheckPath: /health
