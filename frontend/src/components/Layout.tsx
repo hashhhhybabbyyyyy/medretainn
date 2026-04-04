@@ -56,6 +56,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout }) => {
 
   const navItems = [
     { path: '/', label: 'Overview', icon: <LayoutDashboard size={20} /> },
+    { path: '/connect-hims', label: 'Connect HIMS', icon: <Hospital size={20} /> },
     { path: '/patients', label: 'Patient Registry', icon: <Users size={20} /> },
     { path: '/batches', label: 'Outreach Batches', icon: <Layers size={20} /> },
     { path: '/messages', label: 'Communication Log', icon: <MessageSquare size={20} /> },

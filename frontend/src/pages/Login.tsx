@@ -55,8 +55,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 <div style={{
                     background: '#000', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 16, padding: 32
                 }}>
-                    <h2 style={{ margin: '0 0 8px', fontSize: 20, fontWeight: 700, color: '#fff' }}>Sign in to your account</h2>
-                    <p style={{ margin: '0 0 20px', color: '#9ca3af', fontSize: 13 }}>Enter your HIMS portal credentials to continue</p>
+                    <h2 style={{ margin: '0 0 8px', fontSize: 20, fontWeight: 700, color: '#fff' }}>Sign in to MedRetain CRM</h2>
+                    <p style={{ margin: '0 0 20px', color: '#9ca3af', fontSize: 13 }}>Enter your CRM username and password to access the dashboard.</p>
 
                     {error && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', marginBottom: 18, background: 'rgba(239,68,68,0.06)', borderRadius: 12 }}>
@@ -112,6 +112,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     </form>
 
                     <p style={{ margin: '18px 0 0', textAlign: 'center', fontSize: 12, color: '#9ca3af' }}>Your session is encrypted and secured with JWT tokens.</p>
+                    <p style={{ margin: '10px 0 0', textAlign: 'center', fontSize: 12, color: '#9ca3af' }}>
+                        Use your MedRetain CRM credentials here. HIMS portal credentials belong in the Connect HIMS screen after login.
+                    </p>
+                    {import.meta.env.DEV && (
+                        <p style={{ margin: '8px 0 0', textAlign: 'center', fontSize: 12, color: '#a3e635' }}>
+                            Default CRM login: admin / medretain@admin123
+                        </p>
+                    )}
                 </div>
 
                 <p style={{ textAlign: 'center', marginTop: 18, fontSize: 12, color: '#6b7280' }}>© 2026 MedRetain · All rights reserved</p>
