@@ -8,8 +8,8 @@ services:
     repo: https://github.com/hashhhhybabbyyyyy/medretainn
 
     # Build configuration
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install --upgrade pip && pip install -r backend/requirements.txt
+    startCommand: sh -c 'cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT'
 
     # Environment variables
     envVars:
@@ -20,9 +20,7 @@ services:
       - key: JWT_EXPIRE_MINUTES
         value: "480"
       - key: ENCRYPTION_KEY
-        value: your-encryption-key-here
-      - key: PORT
-        value: "8000"
+        value: medretain-encryption-key-32-bytes-long-for-fernet-encryption
       - key: ENVIRONMENT
         value: production
 
